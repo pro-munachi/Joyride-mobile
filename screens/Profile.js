@@ -24,11 +24,13 @@ const Profile = (props) => {
   const [user, setUser] = useState([])
   const [order, setOrder] = useState([])
   const [token, setToken] = useState('')
+  const [id, setId] = useState('')
 
   useEffect(() => {
     const getData = async () => {
       try {
-        setToken(await AsyncStorage.getItem('token'))
+        setToken(await JSON.stringify(AsyncStorage.getItem('token')))
+        setId(await JSON.stringify(AsyncStorage.getItem('id')))
       } catch (e) {
         // error reading value
       }
