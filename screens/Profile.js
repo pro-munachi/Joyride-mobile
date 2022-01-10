@@ -11,10 +11,12 @@ import {
 import { Block, Text, theme } from 'galio-framework'
 import { DataTable } from 'react-native-paper'
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { Button } from '../components'
 import { Images, argonTheme } from '../constants'
 import { HeaderHeight } from '../constants/utils'
+import TableComponent from '../components/Table'
 
 const { width, height } = Dimensions.get('screen')
 
@@ -23,59 +25,61 @@ const thumbMeasure = (width - 48 - 32) / 3
 const Profile = (props) => {
   const [user, setUser] = useState([])
   const [order, setOrder] = useState([])
-  const [token, setToken] = useState('')
-  const [id, setId] = useState('')
 
   useEffect(() => {
     const getData = async () => {
       try {
-        setToken(await JSON.stringify(AsyncStorage.getItem('token')))
-        setId(await JSON.stringify(AsyncStorage.getItem('id')))
+        const headers = {
+          'Content-Type': 'application/json',
+          authorization: `Bearer ${await AsyncStorage.getItem('token')}`,
+        }
+
+        axios
+          .get(
+            `https://joyrideapp.herokuapp.com/users/${await AsyncStorage.getItem(
+              'id'
+            )}`,
+            {
+              headers: headers,
+            }
+          )
+          .then((res) => {
+            if (res.data.hasError === 'false') {
+              console.log('error')
+            } else {
+              setUser(res.data)
+            }
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+
+        axios
+          .get(
+            `https://joyrideapp.herokuapp.com/orders/user/${await AsyncStorage.getItem(
+              'id'
+            )}`,
+            {
+              headers: headers,
+            }
+          )
+          .then((res) => {
+            if (res.data.hasError === false) {
+              setOrder(res.data.slice)
+            }
+          })
+          .catch((err) => {
+            console.log(err)
+          })
       } catch (e) {
         // error reading value
       }
     }
 
     getData()
-
-    console.log(token)
-
-    const headers = {
-      'Content-Type': 'application/json',
-      authorization: `Bearer ${token}`,
-    }
-
-    axios
-      .get(`https://joyrideapp.herokuapp.com/users/613f50e72323b40016c93654`, {
-        headers: headers,
-      })
-      .then((res) => {
-        if (res.data.hasError === 'false') {
-          console.log('error')
-        } else {
-          setUser(res.data)
-        }
-      })
-      .catch((err) => {
-        console.log(err)
-      })
-
-    axios
-      .get(
-        `https://joyrideapp.herokuapp.com/orders/user/613f50e72323b40016c93654`,
-        {
-          headers: headers,
-        }
-      )
-      .then((res) => {
-        if (res.data.hasError === false) {
-          setOrder(res.data.slice)
-        }
-      })
-      .catch((err) => {
-        console.log(err)
-      })
   }, [])
+
+  let head = ['date', 'muna', 'ewoo']
 
   return (
     <Block flex style={styles.profile}>
@@ -103,7 +107,11 @@ const Profile = (props) => {
                   space='evenly'
                   style={{ marginTop: 20, paddingBottom: 24 }}
                 >
-                  <Button small style={{ backgroundColor: '#05386b' }}>
+                  <Button
+                    small
+                    style={{ backgroundColor: '#05386b' }}
+                    onPress={() => props.navigation.navigate('Order')}
+                  >
                     Create Order
                   </Button>
                   <Button
@@ -215,6 +223,7 @@ const Profile = (props) => {
                         </DataTable.Cell>
                       </DataTable.Row>
                     ))}
+                    <TableComponent head={head} body={order} />
                   </DataTable>
                   <Block flex middle>
                     <Button

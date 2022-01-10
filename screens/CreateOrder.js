@@ -9,8 +9,9 @@ import {
   Platform,
 } from 'react-native'
 import { Block, Text, theme } from 'galio-framework'
-import { DataTable } from 'react-native-paper'
+import { Chip } from 'react-native-paper'
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { Button, Input, Icon } from '../components'
 import { Images, argonTheme } from '../constants'
@@ -25,10 +26,114 @@ const CreateOrder = (props) => {
   const [addressTo, setAddressTo] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('')
   const [name, setName] = useState('')
-  const [price, setPrice] = useState('')
   const [loading, setLoading] = useState(false)
   const [add, setAdd] = useState(false)
-  const [allItems, setAllItems] = useState([{ name: '', price: 0 }])
+  const [allItems, setAllItems] = useState([])
+
+  const onclick = () => {
+    const getData = async () => {
+      try {
+        let item = {
+          name: name,
+        }
+        let items = JSON.parse(await AsyncStorage.getItem('order'))
+
+        if (items) {
+          items.push(item)
+          await AsyncStorage.setItem('order', JSON.stringify(items))
+          setAdd(!add)
+        } else {
+          await AsyncStorage.setItem('order', JSON.stringify([item]))
+          setAdd(!add)
+        }
+        setName('')
+        setAllItems(JSON.parse(await AsyncStorage.getItem('order')))
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    getData()
+  }
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        setAllItems(JSON.parse(await AsyncStorage.getItem('order')))
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    getData()
+  }, [])
+
+  const deleteItem = (name) => {
+    const getData = async () => {
+      try {
+        let items = JSON.parse(await AsyncStorage.getItem('order'))
+        var item = items.filter(function (el) {
+          return el.name !== name
+        })
+
+        await AsyncStorage.setItem('order', JSON.stringify(item))
+        setAdd(!add)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    getData()
+  }
+
+  const handleSubmit = () => {
+    const getData = async () => {
+      try {
+        const data = {
+          addressFrom: addressFrom,
+          addressTo: addressTo,
+          paymentMethod: paymentMethod,
+          orderItems: allItems,
+        }
+
+        const headers = {
+          'Content-Type': 'application/json',
+          authorization: `Bearer ${await AsyncStorage.getItem('token')}`,
+        }
+        setLoading(true)
+        console.log('header')
+        console.log(data)
+        axios
+          .post('http://joyrideapp.herokuapp.com/orders/orderProduct', data, {
+            headers: headers,
+          })
+          .then((res) => {
+            console.log('then')
+
+            if (res.data.hasError === false) {
+              console.log('work')
+
+              setLoading(false)
+              setPrice('')
+              setName('')
+              setAddressFrom('')
+              setAddressTo('')
+              setPaymentMethod('')
+              toast.success('Your order has been created successfully')
+              history.push('/dashboard')
+            } else {
+            }
+          })
+          .catch((err) => {
+            setLoading(false)
+          })
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    getData()
+  }
 
   return (
     <Block flex style={styles.profile}>
@@ -52,9 +157,9 @@ const CreateOrder = (props) => {
               <Block width={width * 0.8} style={{ marginBottom: 15 }} middle>
                 <Input
                   borderless
-                  placeholder='Email'
-                  //   value={email}
-                  //   onChangeText={(email) => setEmail(email)}
+                  placeholder='Address From'
+                  value={addressFrom}
+                  onChangeText={(addressFrom) => setAddressFrom(addressFrom)}
                   //   iconContent={
                   //     <Icon
                   //       size={16}
@@ -69,9 +174,9 @@ const CreateOrder = (props) => {
               <Block width={width * 0.8} style={{ marginBottom: 15 }} middle>
                 <Input
                   borderless
-                  placeholder='Email'
-                  //   value={email}
-                  //   onChangeText={(email) => setEmail(email)}
+                  placeholder='Address To'
+                  value={addressTo}
+                  onChangeText={(addressTo) => setAddressTo(addressTo)}
                   //   iconContent={
                   //     <Icon
                   //       size={16}
@@ -86,9 +191,11 @@ const CreateOrder = (props) => {
               <Block width={width * 0.8} style={{ marginBottom: 15 }} middle>
                 <Input
                   borderless
-                  placeholder='Email'
-                  //   value={email}
-                  //   onChangeText={(email) => setEmail(email)}
+                  placeholder='Payment Method'
+                  value={paymentMethod}
+                  onChangeText={(paymentMethod) =>
+                    setPaymentMethod(paymentMethod)
+                  }
                   //   iconContent={
                   //     <Icon
                   //       size={16}
@@ -103,9 +210,9 @@ const CreateOrder = (props) => {
               <Block width={width * 1.0} style={{ marginBottom: 15 }} row>
                 <Input
                   borderless
-                  placeholder='Email'
-                  //   value={email}
-                  //   onChangeText={(email) => setEmail(email)}
+                  placeholder='Item Description'
+                  value={name}
+                  onChangeText={(name) => setName(name)}
                   //   iconContent={
                   //     <Icon
                   //       size={16}
@@ -121,12 +228,34 @@ const CreateOrder = (props) => {
                   center
                   color='default'
                   style={styles.optionsButton}
+                  onPress={onclick}
                 >
                   Add Item
                 </Button>
               </Block>
+
+              <Block width={width * 0.8} style={styles.chip}>
+                {allItems.map((item) => (
+                  <Chip
+                    icon='delete'
+                    onPress={() => deleteItem(item.name)}
+                    key={item.name}
+                    style={styles.chipping}
+                  >
+                    {item.name}
+                  </Chip>
+                ))}
+              </Block>
+
               <Block width={width * 0.8} style={{ marginBottom: 15 }}>
-                <Text>fgfgfg</Text>
+                <Button
+                  center
+                  color='default'
+                  style={styles.button}
+                  onPress={handleSubmit}
+                >
+                  <Text style={styles.buttonText}>Create Order</Text>
+                </Button>
               </Block>
             </Block>
           </ScrollView>
@@ -153,7 +282,7 @@ const styles = StyleSheet.create({
     height: height / 2,
   },
   profileCard: {
-    // position: "relative",
+    // position: 'relative',
     padding: theme.SIZES.BASE,
     marginHorizontal: theme.SIZES.BASE,
     marginTop: 65,
@@ -171,6 +300,30 @@ const styles = StyleSheet.create({
     height: 45,
     paddingHorizontal: theme.SIZES.BASE,
     paddingVertical: 10,
+    backgroundColor: '#05386b',
+  },
+  button: {
+    marginLeft: 0,
+    width: '100%',
+    backgroundColor: '#05386b',
+  },
+  buttonText: {
+    color: 'white',
+  },
+  chip: {
+    marginBottom: 15,
+    height: 'auto',
+    borderWidth: 1,
+    padding: 10,
+    borderColor: '#05386b',
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+
+  chipping: {
+    marginVertical: 10,
+    marginHorizontal: 10,
   },
 })
 
