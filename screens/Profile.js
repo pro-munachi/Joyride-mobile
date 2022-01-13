@@ -109,17 +109,17 @@ const Profile = (props) => {
                 >
                   <Button
                     small
-                    style={{ backgroundColor: '#05386b' }}
-                    onPress={() => props.navigation.navigate('Order')}
+                    style={{ backgroundColor: '#05386b', width: 130 }}
+                    onPress={() => props.navigation.navigate('Edit')}
                   >
-                    Create Order
+                    Edit Profile
                   </Button>
                   <Button
                     small
-                    style={{ backgroundColor: '#05386b' }}
-                    onPress={() => props.navigation.navigate('Dashboard')}
+                    style={{ backgroundColor: '#05386b', width: 130 }}
+                    onPress={() => props.navigation.navigate('Password')}
                   >
-                    Dashboard
+                    Change Password
                   </Button>
                 </Block>
                 <Block row space='between'>

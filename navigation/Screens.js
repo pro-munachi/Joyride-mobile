@@ -23,6 +23,8 @@ import CustomDrawerContent from './Menu'
 // header for screens
 import { Icon, Header } from '../components'
 import { argonTheme, tabs } from '../constants'
+import ChangePassword from '../screens/ChangePassword'
+import EditProfile from '../screens/EditProfile'
 
 const { width } = Dimensions.get('screen')
 
@@ -104,6 +106,54 @@ function CreateStack(props) {
       <Stack.Screen
         name='Order'
         component={CreateOrder}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              title='Order'
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#FFFFFF' },
+          headerTransparent: true,
+        }}
+      />
+    </Stack.Navigator>
+  )
+}
+
+function PasswordStack(props) {
+  return (
+    <Stack.Navigator initialRouteName='Order' mode='card' headerMode='screen'>
+      <Stack.Screen
+        name='Order'
+        component={ChangePassword}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              transparent
+              white
+              title='Order'
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
+          cardStyle: { backgroundColor: '#FFFFFF' },
+          headerTransparent: true,
+        }}
+      />
+    </Stack.Navigator>
+  )
+}
+
+function EditStack(props) {
+  return (
+    <Stack.Navigator initialRouteName='Order' mode='card' headerMode='screen'>
+      <Stack.Screen
+        name='Order'
+        component={EditProfile}
         options={{
           header: ({ navigation, scene }) => (
             <Header
@@ -250,6 +300,8 @@ function AppStack(props) {
       <Drawer.Screen name='Elements' component={ElementsStack} />
       <Drawer.Screen name='Articles' component={ArticlesStack} />
       <Drawer.Screen name='Order' component={CreateStack} />
+      <Drawer.Screen name='Password' component={PasswordStack} />
+      <Drawer.Screen name='Edit' component={EditStack} />
     </Drawer.Navigator>
   )
 }

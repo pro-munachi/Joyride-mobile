@@ -1,51 +1,68 @@
 import React, { Component } from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native'
-import { Table, TableWrapper, Row, Cell } from 'react-native-table-component'
+import { StyleSheet, View, ScrollView } from 'react-native'
+import { Table, TableWrapper, Row } from 'react-native-table-component'
 
 export default class TableComponent extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      tableHead: this.props.head,
-      tableData: this.props.body,
+      tableHead: [
+        'Head',
+        'Head2',
+        'Head3',
+        'Head4',
+        'Head5',
+        'Head6',
+        'Head7',
+        'Head8',
+        'Head9',
+      ],
+      widthArr: [40, 60, 80, 100, 120, 140, 160, 180, 200],
     }
-  }
-
-  _alertIndex(index) {
-    Alert.alert(`This is row ${index + 1}`)
   }
 
   render() {
     const state = this.state
-    const element = (data, index) => (
-      <TouchableOpacity onPress={() => this._alertIndex(index)}>
-        <View style={styles.btn}>
-          <Text style={styles.btnText}>button</Text>
-        </View>
-      </TouchableOpacity>
-    )
+    const tableData = []
+    for (let i = 0; i < 30; i += 1) {
+      const rowData = []
+      for (let j = 0; j < 9; j += 1) {
+        rowData.push(`${i}${j}`)
+      }
+      tableData.push(rowData)
+    }
 
     return (
       <View style={styles.container}>
-        <Table borderStyle={{ borderColor: 'transparent' }}>
-          <Row
-            data={state.tableHead && state.tableHead}
-            style={styles.head}
-            textStyle={styles.text}
-          />
-          {state.tableData &&
-            state.tableData.map((rowData, index) => (
-              <TableWrapper key={index} style={styles.row}>
-                {rowData.map((cellData, cellIndex) => (
-                  <Cell
-                    key={cellIndex}
-                    data={cellIndex === 3 ? element(cellData, index) : cellData}
-                    textStyle={styles.text}
-                  />
-                ))}
-              </TableWrapper>
-            ))}
-        </Table>
+        <ScrollView horizontal={true}>
+          <View>
+            <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+              <Row
+                data={state.tableHead && state.tableHead}
+                widthArr={state.widthArr}
+                style={styles.header}
+                textStyle={styles.text}
+              />
+            </Table>
+            <ScrollView style={styles.dataWrapper}>
+              <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+                {tableData &&
+                  tableData.map((rowData, index) => (
+                    <Row
+                      key={index}
+                      data={rowData}
+                      widthArr={state.widthArr}
+                      style={[
+                        styles.row,
+                        index % 2 && { backgroundColor: '#F7F6E7' },
+                      ]}
+                      textStyle={styles.text}
+                    />
+                  ))}
+              </Table>
+            </ScrollView>
+          </View>
+        </ScrollView>
       </View>
     )
   }
@@ -53,9 +70,8 @@ export default class TableComponent extends Component {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, paddingTop: 30, backgroundColor: '#fff' },
-  head: { height: 40, backgroundColor: '#808B97' },
-  text: { margin: 6 },
-  row: { flexDirection: 'row', backgroundColor: '#FFF1C1' },
-  btn: { width: 58, height: 18, backgroundColor: '#78B7BB', borderRadius: 2 },
-  btnText: { textAlign: 'center', color: '#fff' },
+  header: { height: 50, backgroundColor: '#537791' },
+  text: { textAlign: 'center', fontWeight: '100' },
+  dataWrapper: { marginTop: -1 },
+  row: { height: 40, backgroundColor: '#E7E6E1' },
 })
